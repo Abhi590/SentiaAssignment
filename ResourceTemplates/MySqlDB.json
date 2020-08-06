@@ -71,6 +71,10 @@
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
+            "allowedValues": [
+                "westeurope",
+                "northeurope"
+            ],
             "metadata": {
                 "description": "Location for all resources."
             }

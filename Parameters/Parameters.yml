@@ -4,12 +4,12 @@ variables:
 - name: azure_connection_name
   value: 'AzureSub'
 - name: environmentName
-  value: poc2
+  value: stdemo
 - name: subscriptionid
   value: f0108bad-f761-4ad8-84a9-5e514dfd1eea
 # Resource Group parameters
 - name: rg_name
-  value: 'poc-rg13'
+  value: 'stdemo-rg'
 - name:  location
   value: 'westeurope'
 # MySql DB parameters
