@@ -5,7 +5,7 @@ trigger: none
 stages:
 - stage: Deploy_Resources
   variables:
-    - template: ./Parameters/parameters.yml
+    - template: ../StDemo/Parameters/Parameters.yml
 
   jobs:
   - deployment: Deploy_Resources
@@ -21,59 +21,62 @@ stages:
 
           - checkout: self 
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy Resource Group
-            inputs:
-              deploymentScope: 'Subscription'
-              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
-              templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/ResourceGroup.json'
-              overrideParameters: '-rgName $(rg_name) -rgLocation $(location)'
-              deploymentMode: 'Incremental'
+          # - task: AzureResourceManagerTemplateDeployment@3
+          #   displayName: Deploy Resource Group
+          #   inputs:
+          #     deploymentScope: 'Subscription'
+          #     azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+          #     subscriptionId: '$(subscriptionid)'
+          #     location: '$(location)'
+          #     templateLocation: 'Linked artifact'
+          #     csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/ResourceGroup.json'
+          #     overrideParameters: '-rgName $(rg_name) -rgLocation $(location)'
+          #     deploymentMode: 'Incremental'
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy MySql DB
-            inputs:
-              deploymentScope: 'Subscription'
-              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
-              templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/Resourcesemplates/MySqlDB.json'
-              overrideParameters: '-serverName $(server_name) -administratorLogin $(administrator_login) -administratorLoginPassword $(administrator_login_password) -skuCapacity $(sku_capacity) -skuName $(sku_name) -SkuSizeMB $(sku_size_mb) -SkuTier $(sku_tier) -skuFamily $(sku_family) -mysqlVersion $(mysql_version) -location $(location) -backupRetentionDays $(backup_retention_days) -geoRedundantBackup $(geo_redundant_backup) -virtualNetworkName $(vnet_name) -subnetName $(subnet_name) -virtualNetworkRuleName $(vnet_rule_name) -vnetAddressPrefix $(vnet_address_prefix) -subnetPrefix $(subnet_prefix)'
-              deploymentMode: 'Incremental'
+          # - task: AzureResourceManagerTemplateDeployment@3
+          #   displayName: Deploy MySQL DB
+          #   inputs:
+          #     deploymentScope: 'Resource Group'
+          #     azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+          #     resourceGroupName: '$(rg_name)'
+          #     subscriptionId: '$(subscriptionid)'
+          #     location: '$(location)'
+          #     templateLocation: 'Linked artifact'
+          #     csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/MySqlDB.json'
+          #     overrideParameters: '-serverName $(server_name) -administratorLogin $(administrator_login) -administratorLoginPassword $(administrator_login_password) -skuCapacity $(sku_capacity) -skuName $(sku_name) -SkuSizeMB $(sku_size_mb) -SkuTier $(sku_tier) -skuFamily $(sku_family) -mysqlVersion $(mysql_version) -location $(location) -backupRetentionDays $(backup_retention_days) -geoRedundantBackup $(geo_redundant_backup) -virtualNetworkName $(vnet_name) -subnetName $(subnet_name) -virtualNetworkRuleName $(vnet_rule_name) -vnetAddressPrefix $(vnet_address_prefix) -subnetPrefix $(subnet_prefix)'
+          #     deploymentMode: 'Incremental'
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy App Service Plan
-            inputs:
-              deploymentScope: 'Subscription'
-              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
-              templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/AppServicePlan.json'
-              overrideParameters: '-appServicePlanName $(app_service_plan_name) -location $(location) -sku $(sku)'
-              deploymentMode: 'Incremental'
+          # - task: AzureResourceManagerTemplateDeployment@3
+          #   displayName: Deploy App Service plan
+          #   inputs:
+          #     deploymentScope: 'Resource Group'
+          #     azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+          #     resourceGroupName: '$(rg_name)'
+          #     subscriptionId: '$(subscriptionid)'
+          #     location: '$(location)'
+          #     templateLocation: 'Linked artifact'
+          #     csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/AppServicePlan.json'
+          #     overrideParameters: '-appServicePlanName $(app_service_plan_name) -location $(location) -sku $(sku)'
+          #     deploymentMode: 'Incremental'
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy Web App
-            inputs:
-              deploymentScope: 'Subscription'
-              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
-              templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/AppServicePlan.json'
-              overrideParameters: '-webAppName $(web_app_name) -appServicePlanName $(app_service_plan_name) -location $(location) -language $(language)'
-              deploymentMode: 'Incremental'
+          # - task: AzureResourceManagerTemplateDeployment@3
+          #   displayName: Deploy Web App
+          #   inputs:
+          #     deploymentScope: 'Resource Group'
+          #     azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+          #     resourceGroupName: '$(rg_name)'
+          #     subscriptionId: '$(subscriptionid)'
+          #     location: '$(location)'
+          #     templateLocation: 'Linked artifact'
+          #     csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/WebApp.json'
+          #     overrideParameters: '-webAppName $(web_app_name) -appServicePlanName $(app_service_plan_name) -location $(location) -language $(language)'
+          #     deploymentMode: 'Incremental'
 
           
 
 - stage: Build_WordPress
   variables:
-    - template: ./Parameters/parameters.yml
+    - template: ../StDemo/Parameters/Parameters.yml
 
   jobs:
   - deployment: Build_WordPress
@@ -90,26 +93,26 @@ stages:
 
           - checkout: self 
 
-          - task: NodeTool@0
-            displayName: 'Install Node.js'
-            inputs:
-              versionSpec: 10.13.0
+          # - task: NodeTool@0
+          #   displayName: 'Install Node.js'
+          #   inputs:
+          #     versionSpec: 10.13.0
 
-          - bash: |
-              npm install npm -g
-              npm install grunt-cli -g
-              npm install
-            displayName: 'Install Grunt globally'
+          # - bash: |
+          #     npm install npm -g
+          #     npm install grunt-cli -g
+          #     npm install
+          #   displayName: 'Install Grunt globally'
 
-          - task: Grunt@0
-            displayName: 'Build WordPress with Grunt'
-            inputs:
-              gruntFile: Gruntfile.js
+          # - task: Grunt@0
+          #   displayName: 'Build WordPress with Grunt'
+          #   inputs:
+          #     gruntFile: Gruntfile.js
 
           - task: ArchiveFiles@2
             displayName: 'Archive build files'
             inputs:
-              rootFolderOrFile: '$(Build.SourcesDirectory)/WordPress' 
+              rootFolderOrFile: '$(Build.SourcesDirectory)/StDemo/WordPress' 
               includeRootFolder: false
 
           - task: PublishBuildArtifacts@1
@@ -117,7 +120,7 @@ stages:
 
 - stage: Deploy_WordPress
   variables:
-    - template: ./Parameters/parameters.yml
+    - template: ../StDemo/Parameters/Parameters.yml
 
   jobs:
   - deployment: Deploy_WordPress
@@ -139,7 +142,7 @@ stages:
             inputs:
               azureSubscription: '${{variables.azure_connection_name}}'
               ScriptType: 'FilePath'
-              ScriptPath: '$(Build.SourcesDirectory)/Scripts/ProdToStage.ps1'
+              ScriptPath: '$(Build.SourcesDirectory)/StDemo/Scripts/ProdToStage.ps1'
               ScriptArguments: '-WebAppName $(web_app_name)'
               errorActionPreference: 'continue'
               azurePowerShellVersion: 'latestVersion'
@@ -153,7 +156,7 @@ stages:
               deployToSlotOrASE: true
               ResourceGroupName: '$(rg_name)'
               SlotName: 'staging'
-              packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              packageForLinux: '$(System.DefaultWorkingDirectory)/StDemo/**/*.zip'
               enableCustomDeployment: true
               DeploymentType: 'zipDeploy'
 
