@@ -5,7 +5,7 @@ trigger: none
 stages:
 - stage: Deploy_Resources
   variables:
-    - template: ./Resources/Parameters/parameters.yml
+    - template: ./Parameters/parameters.yml
 
   jobs:
   - deployment: Deploy_Resources
@@ -73,7 +73,7 @@ stages:
 
 - stage: Build_WordPress
   variables:
-    - template: ./Resources/Parameters/parameters.yml
+    - template: ./Parameters/parameters.yml
 
   jobs:
   - deployment: Build_WordPress
@@ -117,7 +117,7 @@ stages:
 
 - stage: Deploy_WordPress
   variables:
-    - template: ./Resources/Parameters/parameters.yml
+    - template: ./Parameters/parameters.yml
 
   jobs:
   - deployment: Deploy_WordPress

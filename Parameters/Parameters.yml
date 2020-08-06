@@ -12,3 +12,44 @@ variables:
   value: 'poc-rg13'
 - name:  location
   value: 'westeurope'
+# MySql DB parameters
+- name: server_name
+  value: 'stdemo-sql'
+- name: administrator_login
+  value: 'stadmin'
+- name: sku_capacity
+  value: 4
+- name: sku_name
+  value: GP_Gen5_2
+- name: sku_size_mb
+  value: 5120
+- name: sku_tier
+  value: GeneralPurpose
+- name: sku_family
+  value: Gen5
+- name: mysql_version
+  value: '5.7'
+- name: backup_retention_days
+  value: 7
+- name: geo_redundant_backup
+  value: 'Disabled'
+- name: vnet_name
+  value: 'stdemo_vnet'
+- name: subnet_name
+  value: 'stdemo_subnet'
+- name: vnet_rule_name
+  value: 'stdemo_rule'
+- name: vnet_address_prefix
+  value: '10.0.0.0/16'
+- name: subnet_prefix
+  value: '10.0.0.0/24'
+# App Service plan parameters
+- name: app_service_plan_name
+  value: 'stdemo_plan'
+- name: sku
+  value: S1
+# Web App parameters
+- name: web_app_name
+  value: 'stdemo_webapp'
+- name: language
+  value: php
