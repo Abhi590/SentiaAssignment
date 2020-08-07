@@ -38,6 +38,18 @@
             "metadata": {
                 "description": "The language stack of the app."
             }
+        },
+        "workspaceName": {
+            "type": "String",
+            "metadata": {
+                "description": "Specifies the name of the workspace."
+            }
+        },
+        "workspaceRgName": {
+            "type": "String",
+            "metadata": {
+                "description": "Specifies the Resource Group Name of the workspace."
+            }
         }
     },
     "variables": {
@@ -72,7 +84,85 @@
             "properties": {
                 "siteConfig": "[variables('configReference')[parameters('language')]]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
-            }
+            },
+            "resources": [
+                {
+                    "type": "providers/diagnosticSettings",
+                    "name": "Microsoft.Insights/service",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
+                    ],
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "workspaceId": "[resourceId(parameters('workspaceRgName'), 'microsoft.operationalinsights/workspaces', parameters('workspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "AppServiceHTTPLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServiceConsoleLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServiceAppLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServiceFileAuditLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServiceAuditLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServiceIPSecAuditLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "AppServicePlatformLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            }
+                        ],
+                        "metrics": [
+                            {
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ],
+                        "logAnalyticsDestinationType": "Dedicated"
+                    }
+                }
+            ]
         }
     ]
 }

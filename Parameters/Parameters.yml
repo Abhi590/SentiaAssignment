@@ -1,17 +1,8 @@
 variables:
 
-# general parameters
-- name: azure_connection_name
-  value: 'AzureSub'
-- name: environmentName
-  value: stdemo
-- name: subscriptionid
-  value: f0108bad-f761-4ad8-84a9-5e514dfd1eea
 # Resource Group parameters
 - name: rg_name
   value: 'stdemo-rg'
-- name:  location
-  value: 'westeurope'
 # MySql DB parameters
 - name: server_name
   value: 'stdemo-sql'
@@ -33,21 +24,29 @@ variables:
   value: 7
 - name: geo_redundant_backup
   value: 'Disabled'
-- name: vnet_name
-  value: 'stdemo_vnet'
-- name: subnet_name
-  value: 'stdemo_subnet'
-- name: vnet_rule_name
-  value: 'stdemo_rule'
-- name: vnet_address_prefix
-  value: '10.0.0.0/16'
-- name: subnet_prefix
-  value: '10.0.0.0/24'
 # App Service plan parameters
 - name: app_service_plan_name
   value: 'stdemo_plan'
 - name: sku
   value: S1
+- name: minimum_capacity
+  value: 2
+- name: maximum_capacity
+  value: 5
+- name: default_capacity
+  value: 2
+- name: metric_name
+  value: CpuPercentage
+- name: metric_threshold_to_scaleout
+  value: 70
+- name: metric_threshold_to_scalein
+  value: 20
+- name: change_count_scaleout
+  value: 1
+- name: change_count_scalein
+  value: 1
+- name: autoscale_enabled
+  value: true
 # Web App parameters
 - name: web_app_name
   value: 'stdemowebapp'

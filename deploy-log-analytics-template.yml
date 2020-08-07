@@ -1,0 +1,49 @@
+name: $(date:yyyyMMdd)$(rev:-r)
+
+trigger: none
+
+stages:
+- stage: Deploy_Resources
+  variables:
+    - template: ../StDemo/Parameters/LaParameters.yml
+    - template: ../StDemo/Parameters/BaseParameters.yml
+
+  jobs:
+  - deployment: Deploy_Log_Analytics
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    environment: 'poc'
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+
+          - checkout: self
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: Deploy Resource Group
+            inputs:
+              deploymentScope: 'Subscription'
+              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+              subscriptionId: '$(subscriptionid)'
+              location: '$(location)'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/ResourceGroup.json'
+              overrideParameters: '-rgName $(la_rg_name) -rgLocation $(location)'
+              deploymentMode: 'Incremental'
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: Deploy Log Analytics Workspace
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+              subscriptionId: '$(subscriptionid)'
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: '$(la_rg_name)'
+              location: '$(location)'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/LogAnalytics.json'
+              overrideParameters: '-location $(location) -workspaceName $(workspace_name) -sku $(sku)'
+              deploymentMode: 'Incremental'

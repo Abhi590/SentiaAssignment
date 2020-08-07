@@ -93,88 +93,22 @@
                 "description": "Geo-Redundant Backup setting"
             }
         },
-        "virtualNetworkName": {
-            "type": "string",
-            "defaultValue": "azure_mysql_vnet",
+        "workspaceName": {
+            "type": "String",
             "metadata": {
-                "description": "Virtual Network Name"
+                "description": "Specifies the name of the workspace."
             }
         },
-        "subnetName": {
-            "type": "string",
-            "defaultValue": "azure_mysql_subnet",
+        "workspaceRgName": {
+            "type": "String",
             "metadata": {
-                "description": "Subnet Name"
-            }
-        },
-        "virtualNetworkRuleName": {
-            "type": "string",
-            "defaultValue": "AllowSubnet",
-            "metadata": {
-                "description": "Virtual Network RuleName"
-            }
-        },
-        "vnetAddressPrefix": {
-            "type": "string",
-            "defaultValue": "10.0.0.0/16",
-            "metadata": {
-                "description": "Virtual Network Address Prefix"
-            }
-        },
-        "subnetPrefix": {
-            "type": "string",
-            "defaultValue": "10.0.0.0/16",
-            "metadata": {
-                "description": "Subnet Address Prefix"
+                "description": "Specifies the Resource Group Name of the workspace."
             }
         }
     },
     "variables": {
-        "firewallrules": {
-            "batch": {
-                "rules": [
-                    {
-                        "Name": "rule1",
-                        "StartIpAddress": "0.0.0.0",
-                        "EndIpAddress": "255.255.255.255"
-                    },
-                    {
-                        "Name": "rule2",
-                        "StartIpAddress": "0.0.0.0",
-                        "EndIpAddress": "255.255.255.255"
-                    }
-                ]
-            }
-        }
     },
     "resources": [
-        {
-            "apiVersion": "2018-06-01",
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('virtualNetworkName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('vnetAddressPrefix')]"
-                    ]
-                }
-            },
-            "resources": [
-                {
-                    "apiVersion": "2018-06-01",
-                    "type": "subnets",
-                    "location": "[parameters('location')]",
-                    "name": "[parameters('subnetName')]",
-                    "dependsOn": [
-                        "[parameters('virtualNetworkName')]"
-                    ],
-                    "properties": {
-                        "addressPrefix": "[parameters('subnetPrefix')]"
-                    }
-                }
-            ]
-        },
         {
             "apiVersion": "2017-12-01",
             "type": "Microsoft.DBforMySQL/servers",
@@ -194,41 +128,61 @@
                 "storageProfile": {
                     "storageMB": "[parameters('skuSizeMB')]",
                     "backupRetentionDays": "[parameters('backupRetentionDays')]",
-                    "geoRedundantBackup": "[parameters('geoRedundantBackup')]"
-                }
+                    "geoRedundantBackup": "[parameters('geoRedundantBackup')]",
+                    "storageAutogrow": "Enabled"
+                },
+                "sslEnforcement": "Disabled",
+                "publicNetworkAccess": "Enabled"
             },
             "resources": [
                 {
-                    "name": "[parameters('virtualNetworkRuleName')]",
-                    "type": "virtualNetworkRules",
-                    "apiVersion": "2017-12-01",
-                    "properties": {
-                        "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
-                        "ignoreMissingVnetServiceEndpoint": true
-                    },
+                    "type": "providers/diagnosticSettings",
+                    "name": "Microsoft.Insights/service",
                     "dependsOn": [
-                        "[concat('Microsoft.DBforMySQL/servers/', parameters('serverName'))]"
-                    ]
+                        "[resourceId('Microsoft.DBforMySQL/servers', parameters('serverName'))]"
+                    ],
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "workspaceId": "[resourceId(parameters('workspaceRgName'), 'microsoft.operationalinsights/workspaces', parameters('workspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "MySqlSlowLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            },
+                            {
+                                "category": "MySqlAuditLogs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": false,
+                                    "days": 0
+                                }
+                            }
+                        ],
+                        "metrics": [
+                            {
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ],
+                        "logAnalyticsDestinationType": "Dedicated"
+                    }
                 }
             ]
         },
         {
-            "name": "[concat(parameters('serverName'),'/',variables('firewallrules').batch.rules[copyIndex()].Name)]",
             "type": "Microsoft.DBforMySQL/servers/firewallRules",
             "apiVersion": "2017-12-01",
-            "location": "[parameters('location')]",
+            "name": "[concat(parameters('serverName'), '/rule2')]",
             "dependsOn": [
-                "[concat('Microsoft.DBforMySQL/servers/', parameters('serverName'))]"
+                "[resourceId('Microsoft.DBforMySQL/servers', parameters('serverName'))]"
             ],
-            "copy": {
-                "name": "firewallRulesCopy",
-                "mode": "Serial",
-                "batchSize": 1,
-                "count": "[length(variables('firewallrules').batch.rules)]"
-            },
             "properties": {
-                "StartIpAddress": "[variables('firewallrules').batch.rules[copyIndex()].StartIpAddress]",
-                "EndIpAddress": "[variables('firewallrules').batch.rules[copyIndex()].EndIpAddress]"
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
             }
         }
     ]

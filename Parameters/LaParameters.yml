@@ -1,0 +1,10 @@
+variables:
+
+- name: la_rg_name
+  value: loganalytics-rg
+- name: location
+  value: westeurope
+- name: workspace_name
+  value: stdemo-la-workspace
+- name: sku
+  value: pergb2018
