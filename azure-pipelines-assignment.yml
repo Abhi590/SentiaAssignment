@@ -5,8 +5,8 @@ trigger: none
 stages:
 - stage: Deploy_Resources
   variables:
-    - template: ../StDemo/Parameters/Parameters.yml
-    - template: ../StDemo/Parameters/BaseParameters.yml
+    - template: ./Parameters/Parameters.yml
+    - template: ./Parameters/BaseParameters.yml
 
   jobs:
   - deployment: Deploy_Resources
@@ -23,15 +23,15 @@ stages:
           - checkout: self 
 
           - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy Resource Group
+            displayName: Deploy Primary Resource Group
             inputs:
               deploymentScope: 'Subscription'
               azureResourceManagerConnection: '${{variables.azure_connection_name}}'
               subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
+              location: '$(pri_location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/ResourceGroup.json'
-              overrideParameters: '-rgName $(rg_name) -rgLocation $(location)'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/ResourceGroup.json'
+              overrideParameters: '-rgName $(pri_rg_name) -rgLocation $(pri_location)'
               deploymentMode: 'Incremental'
 
           - task: AzureResourceManagerTemplateDeployment@3
@@ -39,55 +39,68 @@ stages:
             inputs:
               deploymentScope: 'Resource Group'
               azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              resourceGroupName: '$(rg_name)'
+              resourceGroupName: '$(pri_rg_name)'
               subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
+              location: '$(pri_location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/MySqlDB.json'
-              overrideParameters: '-serverName $(server_name) -administratorLogin $(administrator_login) -administratorLoginPassword $(administrator_login_password) -skuCapacity $(sku_capacity) -skuName $(sku_name) -SkuSizeMB $(sku_size_mb) -SkuTier $(sku_tier) -skuFamily $(sku_family) -mysqlVersion $(mysql_version) -location $(location) -backupRetentionDays $(backup_retention_days) -geoRedundantBackup $(geo_redundant_backup) -workspaceName $(workspace_name) -workspaceRgName $(workspace_rg_name)'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/MySqlDB.json'
+              overrideParameters: '-serverName $(server_name) -administratorLogin $(administrator_login) -administratorLoginPassword $(administrator_login_password) -skuCapacity $(sku_capacity) -skuName $(sku_name) -SkuSizeMB $(sku_size_mb) -SkuTier $(sku_tier) -skuFamily $(sku_family) -mysqlVersion $(mysql_version) -location $(pri_location) -backupRetentionDays $(backup_retention_days) -geoRedundantBackup $(geo_redundant_backup) -workspaceName $(workspace_name) -workspaceRgName $(workspace_rg_name)'
               deploymentMode: 'Incremental'
 
           - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy App Service plan
+            displayName: Deploy Primary App Service plan
             inputs:
               deploymentScope: 'Resource Group'
               azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              resourceGroupName: '$(rg_name)'
+              resourceGroupName: '$(pri_rg_name)'
               subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
+              location: '$(pri_location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/AppServicePlan.json'
-              overrideParameters: '-appServicePlanName $(app_service_plan_name) -location $(location) -sku $(sku) -minimumCapacity $(minimum_capacity) -maximumCapacity $(maximum_capacity) -defaultCapacity $(default_capacity) -metricName $(metric_name) -metricThresholdToScaleOut $(metric_threshold_to_scaleout) -metricThresholdToScaleIn $(metric_threshold_to_scalein) -changeCountScaleOut $(change_count_scaleout) -changeCountScaleIn $(change_count_scalein) -autoscaleEnabled $(autoscale_enabled)'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/AppServicePlan.json'
+              overrideParameters: '-appServicePlanName $(pri_app_service_plan_name) -location $(pri_location) -sku $(sku) -minimumCapacity $(minimum_capacity) -maximumCapacity $(maximum_capacity) -defaultCapacity $(default_capacity) -metricName $(metric_name) -metricThresholdToScaleOut $(metric_threshold_to_scaleout) -metricThresholdToScaleIn $(metric_threshold_to_scalein) -changeCountScaleOut $(change_count_scaleout) -changeCountScaleIn $(change_count_scalein) -autoscaleEnabled $(autoscale_enabled)'
               deploymentMode: 'Incremental'
 
           - task: AzureResourceManagerTemplateDeployment@3
-            displayName: Deploy Web App
+            displayName: Deploy Primary Web App
             inputs:
               deploymentScope: 'Resource Group'
               azureResourceManagerConnection: '${{variables.azure_connection_name}}'
-              resourceGroupName: '$(rg_name)'
+              resourceGroupName: '$(pri_rg_name)'
               subscriptionId: '$(subscriptionid)'
-              location: '$(location)'
+              location: '$(pri_location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/WebApp.json'
-              overrideParameters: '-webAppName $(web_app_name) -appServicePlanName $(app_service_plan_name) -location $(location) -language $(language) -workspaceName $(workspace_name) -workspaceRgName $(workspace_rg_name)'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/WebApp.json'
+              overrideParameters: '-webAppName $(pri_web_app_name) -appServicePlanName $(pri_app_service_plan_name) -location $(pri_location) -language $(language) -appInsightsName $(app_insights_name) -workspaceName $(workspace_name) -workspaceRgName $(workspace_rg_name)'
               deploymentMode: 'Incremental'
 
           - task: MysqlDeploymentOnMachineGroup@1
             displayName: Create DB in Mysql
             inputs:
               TaskNameSelector: 'InlineSqlTask'
-              SqlInline: 'CREATE DATABASE stdemo;'
-              ServerName: 'stdemo-sql.mysql.database.azure.com'
-              SqlUsername: 'stadmin@stdemo-sql'
+              SqlInline: 'CREATE DATABASE IF NOT EXISTS stdemo;'
+              ServerName: '$(mysqlsrvname)'
+              SqlUsername: '$(mysqluser)'
               SqlPassword: '$(administrator_login_password)'
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: Deploy Trafic Manager
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: '${{variables.azure_connection_name}}'
+              resourceGroupName: '$(pri_rg_name)'
+              subscriptionId: '$(subscriptionid)'
+              location: '$(pri_location)'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/TraficManager.json'
+              overrideParameters: '-trafficManagerName $(traffic_manager_name) -uniqueDnsNameForWebApp $(pri_web_app_name) -uniqueDnsName $(unique_dns_name)'
+              deploymentMode: 'Incremental'
 
           
 
 - stage: Build_WordPress
   variables:
-    - template: ../StDemo/Parameters/Parameters.yml
-    - template: ../StDemo/Parameters/BaseParameters.yml
+    - template: ./Parameters/Parameters.yml
+    - template: ./Parameters/BaseParameters.yml
 
   jobs:
   - deployment: Build_Deploy_WordPress
@@ -107,40 +120,41 @@ stages:
           - task: ArchiveFiles@2
             displayName: 'Archive build files'
             inputs:
-              rootFolderOrFile: '$(Build.SourcesDirectory)/StDemo/WordPress'
+              rootFolderOrFile: '$(Build.SourcesDirectory)/WordPress'
               includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
 
           - task: AzurePowerShell@4
-            displayName: Prod to Staging
+            displayName: Prod to Staging primary
             inputs:
               azureSubscription: '${{variables.azure_connection_name}}'
               ScriptType: 'FilePath'
-              ScriptPath: '$(Build.SourcesDirectory)/StDemo/Scripts/ProdToStage.ps1'
-              ScriptArguments: '-WebAppName $(web_app_name)'
+              ScriptPath: '$(Build.SourcesDirectory)/Scripts/ProdToStage.ps1'
+              ScriptArguments: '-WebAppName $(pri_web_app_name)'
               errorActionPreference: 'continue'
               azurePowerShellVersion: 'latestVersion'
 
           - task: AzureRmWebAppDeployment@4
-            displayName: Deploy the WordPress
+            displayName: Deploy the WordPress primary
             inputs:
               ConnectionType: 'AzureRM'
               azureSubscription: 'AzureSub'
               appType: 'webApp'
-              WebAppName: '$(web_app_name)'
+              WebAppName: '$(pri_web_app_name)'
               deployToSlotOrASE: true
-              ResourceGroupName: '$(rg_name)'
+              ResourceGroupName: '$(pri_rg_name)'
               SlotName: 'staging'
               packageForLinux: '$(Build.ArtifactStagingDirectory)/*.zip'
               enableCustomDeployment: true
               DeploymentType: 'zipDeploy'
 
           - task: AzureAppServiceManage@0
-            displayName: Switch the slot
+            displayName: Switch the slot primary
             inputs:
               azureSubscription: 'AzureSub'
               Action: 'Swap Slots'
-              WebAppName: '$(web_app_name)'
-              ResourceGroupName: '$(rg_name)'
+              WebAppName: '$(pri_web_app_name)'
+              ResourceGroupName: '$(pri_rg_name)'
               SourceSlot: 'staging'
+

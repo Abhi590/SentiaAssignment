@@ -5,8 +5,8 @@ trigger: none
 stages:
 - stage: Deploy_Resources
   variables:
-    - template: ../StDemo/Parameters/LaParameters.yml
-    - template: ../StDemo/Parameters/BaseParameters.yml
+    - template: ./Parameters/LaParameters.yml
+    - template: ./Parameters/BaseParameters.yml
 
   jobs:
   - deployment: Deploy_Log_Analytics
@@ -30,7 +30,7 @@ stages:
               subscriptionId: '$(subscriptionid)'
               location: '$(location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/ResourceGroup.json'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/ResourceGroup.json'
               overrideParameters: '-rgName $(la_rg_name) -rgLocation $(location)'
               deploymentMode: 'Incremental'
 
@@ -44,6 +44,6 @@ stages:
               resourceGroupName: '$(la_rg_name)'
               location: '$(location)'
               templateLocation: 'Linked artifact'
-              csmFile: '$(Build.SourcesDirectory)/StDemo/ResourceTemplates/LogAnalytics.json'
+              csmFile: '$(Build.SourcesDirectory)/ResourceTemplates/LogAnalytics.json'
               overrideParameters: '-location $(location) -workspaceName $(workspace_name) -sku $(sku)'
               deploymentMode: 'Incremental'

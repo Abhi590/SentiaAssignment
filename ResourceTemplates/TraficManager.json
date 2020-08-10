@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "uniqueDnsName": {
+            "type": "string",
+            "metadata": {
+                "description": "Relative DNS name for the traffic manager profile, resulting FQDN will be <uniqueDnsName>.trafficmanager.net, must be globally unique."
+            }
+        },
+        "uniqueDnsNameForWebApp": {
+            "type": "string",
+            "metadata": {
+                "description": "Relative DNS name for the WebApps, must be globally unique.  An index will be appended for each Web App."
+            }
+        },
+        "trafficManagerName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the trafficManager being created"
+            }
+        }
+    },
+
+    "variables": {},
+
+    "resources": [
+        {
+            "apiVersion": "2018-08-01",
+            "type": "Microsoft.Network/trafficManagerProfiles",
+            "name": "[parameters('trafficManagerName')]",
+            "location": "global",
+            "properties": {
+                "profileStatus": "Enabled",
+                "trafficRoutingMethod": "Priority",
+                "dnsConfig": {
+                    "relativeName": "[parameters('uniqueDnsName')]",
+                    "ttl": 30
+                },
+                "monitorConfig": {
+                    "protocol": "HTTPS",
+                    "port": 443,
+                    "path": "/"
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-08-01",
+            "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/trafficManagerProfiles/',parameters('trafficManagerName'))]"
+            ],
+            "location": "global",
+            "name": "[concat(parameters('trafficManagerName'),'/',parameters('uniqueDnsNameForWebApp'))]",
+            "properties": {
+                "targetResourceId": "[resourceId('Microsoft.Web/sites/', parameters('uniqueDnsNameForWebApp'))]",
+                "endpointStatus": "Enabled"
+            }
+        }
+    ]
+}

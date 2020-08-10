@@ -7,8 +7,10 @@ variables:
   value: stdemo
 - name: subscriptionid
   value: f0108bad-f761-4ad8-84a9-5e514dfd1eea
-- name:  location
+- name:  pri_location
   value: 'westeurope'
+- name:  sec_location
+  value: 'northeurope'
 - name: workspace_name
   value: stdemo-la-workspace
 - name: workspace_rg_name

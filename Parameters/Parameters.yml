@@ -1,11 +1,15 @@
 variables:
 
 # Resource Group parameters
-- name: rg_name
-  value: 'stdemo-rg'
+- name: pri_rg_name
+  value: 'stdemo-rg-primary'
+- name: sec_rg_name
+  value: 'stdemo-rg-secondary'
+- name: fd_rg_name
+  value: 'stdemo-rg-frontdoor'
 # MySql DB parameters
 - name: server_name
-  value: 'stdemo-sql'
+  value: 'stdemo-sqlsrv'
 - name: administrator_login
   value: 'stadmin'
 - name: sku_capacity
@@ -25,8 +29,10 @@ variables:
 - name: geo_redundant_backup
   value: 'Disabled'
 # App Service plan parameters
-- name: app_service_plan_name
-  value: 'stdemo_plan'
+- name: pri_app_service_plan_name
+  value: 'stdemo_plan_primary'
+- name: sec_app_service_plan_name
+  value: 'stdemo_plan_Secondary'
 - name: sku
   value: S1
 - name: minimum_capacity
@@ -48,7 +54,21 @@ variables:
 - name: autoscale_enabled
   value: true
 # Web App parameters
-- name: web_app_name
-  value: 'stdemowebapp'
+- name: pri_web_app_name
+  value: 'stdemowebappprimary'
+- name: sec_web_app_name
+  value: 'stdemowebappsecondary'
 - name: language
   value: php
+- name: app_insights_name
+  value: stdemoappi
+# Additional Parameters
+- name: mysqlsrvname
+  value: $(server_name).mysql.database.azure.com
+- name: mysqluser
+  value: stadmin@$(server_name)
+# Trafic Manager parameters
+- name: traffic_manager_name
+  value: stdemotr
+- name: unique_dns_name
+  value: stdemosite
